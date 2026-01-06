@@ -230,3 +230,11 @@ docker compose down -v
 ## License
 
 MIT 
+
+## References
+```
+https://www.youtube.com/watch?v=e03bBeE5jZY
+```
+Da provare:
+- Weaviate (open source) - Milvus (enterprise)
+- pgvector (plugin Postgre)
