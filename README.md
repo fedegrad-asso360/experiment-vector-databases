@@ -41,8 +41,10 @@ Edit `.env` if you need to customize the Weaviate host or port.
 
 ### 4. Start Weaviate with Docker Compose
 
+> **Note:** Make sure Docker Desktop is running before executing this command.
+
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 This will start a Weaviate instance on `http://localhost:8080`.
@@ -216,13 +218,13 @@ curl "http://localhost:3000/cities"
 To stop the Weaviate container:
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 To stop the Weaviate container and remove volumes:
 
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 ## License
