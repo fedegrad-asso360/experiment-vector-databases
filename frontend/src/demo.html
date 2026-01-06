@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City Search - Angular Element Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .description {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+    .code-block {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+      font-family: monospace;
+      font-size: 14px;
+      overflow-x: auto;
+    }
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .info-box h3 {
+      margin-top: 0;
+      color: #1976D2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏛️ Italian Cities Search</h1>
+    <p class="description">
+      This is an Angular Element (Web Component) that can be embedded in any webpage.
+    </p>
+
+    <div class="info-box">
+      <h3>How to Use This Component</h3>
+      <p>This component is a reusable Web Component built with Angular Elements. You can embed it in any HTML page like this:</p>
+      <div class="code-block">
+&lt;!-- Include the compiled Angular Element scripts --&gt;<br>
+&lt;script src="main.js" defer&gt;&lt;/script&gt;<br>
+&lt;script src="polyfills.js" defer&gt;&lt;/script&gt;<br>
+&lt;script src="runtime.js" defer&gt;&lt;/script&gt;<br>
+<br>
+&lt;!-- Use the custom element --&gt;<br>
+&lt;city-search-element<br>
+&nbsp;&nbsp;apiUrl="http://localhost:3000/cities/search"<br>
+&nbsp;&nbsp;placeholder="Search for a city..."<br>
+&nbsp;&nbsp;limit="10"&gt;<br>
+&lt;/city-search-element&gt;
+      </div>
+    </div>
+
+    <h2 style="text-align: center; margin-top: 40px; color: #555;">Try It Out:</h2>
+    
+    <!-- This is the Angular Element / Web Component -->
+    <city-search-element
+      apiUrl="http://localhost:3000/cities/search"
+      placeholder="Search for Italian cities (e.g., Roma, Milano, Napoli)..."
+      limit="10">
+    </city-search-element>
+
+    <div class="info-box" style="margin-top: 40px;">
+      <h3>Component Features</h3>
+      <ul>
+        <li>✨ <strong>Real-time Search</strong> - As you type, results appear with debouncing</li>
+        <li>🎯 <strong>Smart Matching</strong> - Supports fuzzy search with typo tolerance</li>
+        <li>📦 <strong>Selectable Combobox</strong> - Click to select from dropdown results</li>
+        <li>📊 <strong>Detailed Info</strong> - Shows complete city data when selected</li>
+        <li>🔌 <strong>Reusable</strong> - Can be embedded anywhere as a Web Component</li>
+        <li>⚡ <strong>Configurable</strong> - Custom API URL, placeholder, and result limit</li>
+      </ul>
+    </div>
+
+    <div class="info-box" style="background: #fff3e0; border-left-color: #ff9800;">
+      <h3>⚠️ Note</h3>
+      <p>Make sure the backend API is running on <code>http://localhost:3000</code> before using this component. Start it with:</p>
+      <div class="code-block">
+cd .. && npm run start:dev
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Listen for city selection events
+    document.addEventListener('DOMContentLoaded', function() {
+      const citySearch = document.querySelector('city-search-element');
+      if (citySearch) {
+        citySearch.addEventListener('citySelected', function(event) {
+          console.log('City selected:', event.detail);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
