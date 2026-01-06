@@ -7,6 +7,17 @@ export class WeaviateService implements OnModuleInit {
   private readonly logger = new Logger(WeaviateService.name);
   private readonly className = 'City';
 
+  // Fuzzy search configuration constants
+  private readonly FUZZY_SEARCH_FETCH_LIMIT = 100;
+  private readonly MAX_EDIT_DISTANCE = 2;
+  private readonly MIN_MATCH_LENGTH = 3;
+  private readonly SCORE_EXACT_MATCH = 1000;
+  private readonly SCORE_STARTS_WITH = 800;
+  private readonly SCORE_CONTAINS = 600;
+  private readonly SCORE_FUZZY_BASE = 400;
+  private readonly SCORE_PREFIX_FUZZY_BASE = 300;
+  private readonly SCORE_EDIT_PENALTY = 50;
+
   async onModuleInit() {
     this.client = weaviate.client({
       scheme: 'http',
@@ -30,11 +41,13 @@ export class WeaviateService implements OnModuleInit {
         const classObj = {
           class: this.className,
           description: 'Italian cities and municipalities',
+          vectorizer: 'none',
           properties: [
             {
               name: 'name',
               dataType: ['text'],
               description: 'City name',
+              tokenization: 'word',
             },
             {
               name: 'isoCode',
@@ -98,23 +111,112 @@ export class WeaviateService implements OnModuleInit {
 
   async searchCitiesByName(query: string, limit: number = 10) {
     try {
-      const result = await this.client.graphql
+      // Normalize query to lowercase for case-insensitive matching
+      const normalizedQuery = query.toLowerCase();
+      
+      // Get cities to apply fuzzy matching
+      // Note: For larger datasets, consider implementing database-level filtering
+      // or pagination to improve performance
+      const allCitiesResult = await this.client.graphql
         .get()
         .withClassName(this.className)
         .withFields('name isoCode belfioreCode cityId district region')
-        .withWhere({
-          path: ['name'],
-          operator: 'Like',
-          valueText: `*${query}*`,
-        })
-        .withLimit(limit)
+        .withLimit(this.FUZZY_SEARCH_FETCH_LIMIT)
         .do();
 
-      return result.data.Get[this.className] || [];
+      const allCities = allCitiesResult.data.Get[this.className] || [];
+
+      // Apply fuzzy matching: calculate similarity scores
+      const scoredCities = allCities
+        .map((city) => ({
+          ...city,
+          score: this.calculateSimilarity(normalizedQuery, city.name.toLowerCase()),
+        }))
+        .filter((city) => city.score > 0) // Only include cities with some similarity
+        .sort((a, b) => b.score - a.score) // Sort by descending score
+        .slice(0, limit) // Take top N results
+        .map(({ score, ...city }) => city); // Remove score from final result
+
+      return scoredCities;
     } catch (error) {
       this.logger.error('Error searching cities', error);
       throw error;
     }
+  }
+
+  /**
+   * Calculate similarity between query and city name using multiple methods:
+   * 1. Exact match
+   * 2. Starts with query
+   * 3. Contains query as substring
+   * 4. Levenshtein distance for typo tolerance
+   */
+  private calculateSimilarity(query: string, cityName: string): number {
+    // Exact match gets highest score
+    if (query === cityName) {
+      return this.SCORE_EXACT_MATCH;
+    }
+
+    // Starts with query
+    if (cityName.startsWith(query)) {
+      return this.SCORE_STARTS_WITH;
+    }
+
+    // Contains query as substring
+    if (cityName.includes(query)) {
+      return this.SCORE_CONTAINS;
+    }
+
+    // Calculate Levenshtein distance for fuzzy matching
+    const distance = this.levenshteinDistance(query, cityName);
+    const maxLength = Math.max(query.length, cityName.length);
+    
+    // If distance is small relative to length, it's a good match
+    if (distance <= this.MAX_EDIT_DISTANCE && maxLength - distance >= this.MIN_MATCH_LENGTH) {
+      return this.SCORE_FUZZY_BASE - distance * this.SCORE_EDIT_PENALTY;
+    }
+
+    // Check if query is a prefix of cityName with small edit distance
+    if (cityName.length >= query.length) {
+      const prefix = cityName.substring(0, query.length);
+      const prefixDistance = this.levenshteinDistance(query, prefix);
+      if (prefixDistance <= this.MAX_EDIT_DISTANCE) {
+        return this.SCORE_PREFIX_FUZZY_BASE - prefixDistance * this.SCORE_EDIT_PENALTY;
+      }
+    }
+
+    return 0;
+  }
+
+  /**
+   * Calculate Levenshtein distance between two strings
+   */
+  private levenshteinDistance(str1: string, str2: string): number {
+    const matrix = [];
+
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            matrix[i][j - 1] + 1,     // insertion
+            matrix[i - 1][j] + 1,     // deletion
+          );
+        }
+      }
+    }
+
+    return matrix[str2.length][str1.length];
   }
 
   async getAllCities(limit: number = 100) {

@@ -6,8 +6,9 @@ A backend API built with NestJS and Weaviate vector database to search and query
 
 - **NestJS Backend API** with TypeORM support
 - **Weaviate Vector Database** for efficient city searches
+- **Flexible Fuzzy Search** with typo tolerance using Levenshtein distance
 - **Italian Cities Data** with ISO codes, Belfiore codes, districts, and regions
-- **REST API Endpoints** to search cities by name
+- **REST API Endpoints** to search cities by name with multiple matching strategies
 - **Docker Compose** for easy setup
 
 ## Prerequisites
@@ -69,15 +70,37 @@ The API will be available at `http://localhost:3000`.
 
 ### Search Cities by Name
 
-Search for cities by name using a query parameter:
+Search for cities by name using a query parameter with **fuzzy matching** support:
 
 ```bash
 GET /cities/search?name=Roma&limit=10
 ```
 
+**Features:**
+- **Exact matching**: Finds cities with exact name matches
+- **Prefix matching**: Matches city names that start with the query
+- **Substring matching**: Finds cities containing the query text
+- **Typo tolerance**: Handles minor spelling mistakes using Levenshtein distance (up to 2 character edits)
+- **Case-insensitive**: Searches work regardless of letter casing
+
 **Parameters:**
 - `name` (required): Search query for city name
 - `limit` (optional): Maximum number of results (default: 10)
+
+**Example Queries:**
+```bash
+# Exact match
+curl "http://localhost:3000/cities/search?name=Roma"
+
+# English variation
+curl "http://localhost:3000/cities/search?name=Rome"
+
+# Typo with extra character
+curl "http://localhost:3000/cities/search?name=Romma"
+
+# Prefix match
+curl "http://localhost:3000/cities/search?name=Mil"
+```
 
 **Example Response:**
 ```json
@@ -198,12 +221,23 @@ npm run lint
 
 You can test the API using curl or any HTTP client:
 
-### Search for cities containing "Roma"
+### Search with exact match
 ```bash
 curl "http://localhost:3000/cities/search?name=Roma"
 ```
 
-### Search for cities containing "Mil"
+### Search with English variation
+```bash
+curl "http://localhost:3000/cities/search?name=Rome"
+```
+
+### Search with typo (fuzzy matching)
+```bash
+curl "http://localhost:3000/cities/search?name=Romma"
+curl "http://localhost:3000/cities/search?name=Milamo"
+```
+
+### Search with prefix
 ```bash
 curl "http://localhost:3000/cities/search?name=Mil&limit=5"
 ```
