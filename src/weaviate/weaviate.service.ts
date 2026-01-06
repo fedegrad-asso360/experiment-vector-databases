@@ -7,6 +7,17 @@ export class WeaviateService implements OnModuleInit {
   private readonly logger = new Logger(WeaviateService.name);
   private readonly className = 'City';
 
+  // Fuzzy search configuration constants
+  private readonly FUZZY_SEARCH_FETCH_LIMIT = 100;
+  private readonly MAX_EDIT_DISTANCE = 2;
+  private readonly MIN_MATCH_LENGTH = 3;
+  private readonly SCORE_EXACT_MATCH = 1000;
+  private readonly SCORE_STARTS_WITH = 800;
+  private readonly SCORE_CONTAINS = 600;
+  private readonly SCORE_FUZZY_BASE = 400;
+  private readonly SCORE_PREFIX_FUZZY_BASE = 300;
+  private readonly SCORE_EDIT_PENALTY = 50;
+
   async onModuleInit() {
     this.client = weaviate.client({
       scheme: 'http',
@@ -103,12 +114,14 @@ export class WeaviateService implements OnModuleInit {
       // Normalize query to lowercase for case-insensitive matching
       const normalizedQuery = query.toLowerCase();
       
-      // Get all cities (or a reasonable subset) to apply fuzzy matching
+      // Get cities to apply fuzzy matching
+      // Note: For larger datasets, consider implementing database-level filtering
+      // or pagination to improve performance
       const allCitiesResult = await this.client.graphql
         .get()
         .withClassName(this.className)
         .withFields('name isoCode belfioreCode cityId district region')
-        .withLimit(100) // Get more cities for better fuzzy matching
+        .withLimit(this.FUZZY_SEARCH_FETCH_LIMIT)
         .do();
 
       const allCities = allCitiesResult.data.Get[this.className] || [];
@@ -141,17 +154,17 @@ export class WeaviateService implements OnModuleInit {
   private calculateSimilarity(query: string, cityName: string): number {
     // Exact match gets highest score
     if (query === cityName) {
-      return 1000;
+      return this.SCORE_EXACT_MATCH;
     }
 
     // Starts with query
     if (cityName.startsWith(query)) {
-      return 800;
+      return this.SCORE_STARTS_WITH;
     }
 
     // Contains query as substring
     if (cityName.includes(query)) {
-      return 600;
+      return this.SCORE_CONTAINS;
     }
 
     // Calculate Levenshtein distance for fuzzy matching
@@ -159,16 +172,16 @@ export class WeaviateService implements OnModuleInit {
     const maxLength = Math.max(query.length, cityName.length);
     
     // If distance is small relative to length, it's a good match
-    if (distance <= 2 && maxLength - distance >= 3) {
-      return 400 - distance * 50;
+    if (distance <= this.MAX_EDIT_DISTANCE && maxLength - distance >= this.MIN_MATCH_LENGTH) {
+      return this.SCORE_FUZZY_BASE - distance * this.SCORE_EDIT_PENALTY;
     }
 
     // Check if query is a prefix of cityName with small edit distance
     if (cityName.length >= query.length) {
       const prefix = cityName.substring(0, query.length);
       const prefixDistance = this.levenshteinDistance(query, prefix);
-      if (prefixDistance <= 2) {
-        return 300 - prefixDistance * 50;
+      if (prefixDistance <= this.MAX_EDIT_DISTANCE) {
+        return this.SCORE_PREFIX_FUZZY_BASE - prefixDistance * this.SCORE_EDIT_PENALTY;
       }
     }
 
