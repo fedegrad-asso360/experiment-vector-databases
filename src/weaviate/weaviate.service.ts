@@ -26,25 +26,47 @@ export class WeaviateService implements OnModuleInit {
         .catch(() => null);
 
       if (!exists) {
-        // Create the schema for cities
+        // Create the schema for cities with vectorization enabled
         const classObj = {
           class: this.className,
           description: 'Italian cities and municipalities',
+          vectorizer: 'text2vec-contextionary',
+          moduleConfig: {
+            'text2vec-contextionary': {
+              vectorizeClassName: false,
+            },
+          },
           properties: [
             {
               name: 'name',
               dataType: ['text'],
               description: 'City name',
+              moduleConfig: {
+                'text2vec-contextionary': {
+                  skip: false,
+                  vectorizePropertyName: false,
+                },
+              },
             },
             {
               name: 'isoCode',
               dataType: ['text'],
               description: 'ISO code',
+              moduleConfig: {
+                'text2vec-contextionary': {
+                  skip: true,
+                },
+              },
             },
             {
               name: 'belfioreCode',
               dataType: ['text'],
               description: 'Belfiore code',
+              moduleConfig: {
+                'text2vec-contextionary': {
+                  skip: true,
+                },
+              },
             },
             {
               name: 'cityId',
@@ -55,11 +77,21 @@ export class WeaviateService implements OnModuleInit {
               name: 'district',
               dataType: ['text'],
               description: 'District/Province',
+              moduleConfig: {
+                'text2vec-contextionary': {
+                  skip: true,
+                },
+              },
             },
             {
               name: 'region',
               dataType: ['text'],
               description: 'Region',
+              moduleConfig: {
+                'text2vec-contextionary': {
+                  skip: true,
+                },
+              },
             },
           ],
         };
@@ -102,10 +134,8 @@ export class WeaviateService implements OnModuleInit {
         .get()
         .withClassName(this.className)
         .withFields('name isoCode belfioreCode cityId district region')
-        .withWhere({
-          path: ['name'],
-          operator: 'Like',
-          valueText: `*${query}*`,
+        .withNearText({
+          concepts: [query],
         })
         .withLimit(limit)
         .do();
