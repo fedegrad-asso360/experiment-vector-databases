@@ -1,15 +1,24 @@
 # Cities Vector Database API
 
-A backend API built with NestJS and Weaviate vector database to search and query Italian cities and municipalities.
+A backend API built with NestJS and Weaviate vector database to search and query Italian cities and municipalities, with an Angular frontend featuring a reusable Web Component.
 
 ## Features
 
+### Backend
 - **NestJS Backend API** with TypeORM support
 - **Weaviate Vector Database** for efficient city searches
 - **Flexible Fuzzy Search** with typo tolerance using Levenshtein distance
 - **Italian Cities Data** with ISO codes, Belfiore codes, districts, and regions
 - **REST API Endpoints** to search cities by name with multiple matching strategies
 - **Docker Compose** for easy setup
+
+### Frontend
+- **Angular 17 Frontend** with reusable city search component
+- **Angular Elements** - Component exported as Web Component for use in any webpage
+- **Real-time Search** with debouncing and auto-complete
+- **Selectable Combobox** with dropdown results
+- **Detailed City Information** display
+- **Configurable** API endpoint and search parameters
 
 ## Prerequisites
 
@@ -65,6 +74,41 @@ npm run start:dev
 ```
 
 The API will be available at `http://localhost:3000`.
+
+## Frontend Setup
+
+The project includes an Angular frontend with a reusable city search component built as an Angular Element (Web Component).
+
+### 1. Navigate to frontend directory
+
+```bash
+cd frontend
+```
+
+### 2. Install frontend dependencies
+
+```bash
+npm install
+```
+
+### 3. Start the frontend development server
+
+```bash
+npm start
+```
+
+The frontend will be available at `http://localhost:4200`.
+
+**Note:** Make sure the backend API is running before starting the frontend.
+
+### Build the frontend for production
+
+```bash
+cd frontend
+npm run build
+```
+
+For more details about the frontend, see [frontend/README.md](frontend/README.md).
 
 ## API Endpoints
 
@@ -191,8 +235,8 @@ npm run lint
 ```
 .
 ├── docker-compose.yml          # Docker Compose configuration for Weaviate
-├── package.json                # Project dependencies and scripts
-├── src/
+├── package.json                # Backend dependencies and scripts
+├── src/                        # Backend source code
 │   ├── main.ts                # Application entry point
 │   ├── app.module.ts          # Root application module
 │   ├── cities/                # Cities module
@@ -206,16 +250,36 @@ npm run lint
 │   ├── data/                  # Data files
 │   │   └── cities.data.ts     # Italian cities dataset
 │   └── seed.ts                # Database seeding script
-└── README.md
+├── frontend/                   # Angular frontend application
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── city-search/   # Reusable city search component
+│   │   │   ├── app.component.* # Root component with demo
+│   │   │   └── app.module.ts  # Angular module configuration
+│   │   ├── demo.html          # Standalone Web Component demo
+│   │   ├── main.ts            # Bootstrap & Angular Elements config
+│   │   └── polyfills.ts       # Polyfills for Web Components
+│   ├── angular.json           # Angular CLI configuration
+│   ├── package.json           # Frontend dependencies
+│   └── README.md              # Frontend documentation
+└── README.md                   # This file
 ```
 
 ## Technologies Used
 
+### Backend
 - **NestJS** - Progressive Node.js framework
 - **TypeORM** - ORM for TypeScript and JavaScript
 - **Weaviate** - Vector database for semantic search
 - **Docker** - Containerization platform
 - **TypeScript** - Typed superset of JavaScript
+
+### Frontend
+- **Angular 17** - Frontend framework
+- **Angular Elements** - For creating Web Components
+- **RxJS** - Reactive programming for search debouncing
+- **HttpClient** - For API communication
+- **TypeScript** - Type-safe development
 
 ## Testing the API
 

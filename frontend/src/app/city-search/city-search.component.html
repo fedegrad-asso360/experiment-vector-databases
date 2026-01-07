@@ -1,0 +1,74 @@
+<div class="city-search-container">
+  <div class="search-wrapper">
+    <input
+      type="text"
+      class="search-input"
+      [placeholder]="placeholder"
+      [(ngModel)]="searchTerm"
+      (input)="onSearchChange($any($event.target).value)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      autocomplete="off"
+    />
+    <button 
+      *ngIf="selectedCity" 
+      class="clear-button" 
+      (click)="clearSelection()"
+      type="button"
+    >
+      ✕
+    </button>
+    <div *ngIf="isLoading" class="loading-indicator">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="showDropdown && cities.length > 0" class="dropdown">
+    <div 
+      *ngFor="let city of cities" 
+      class="dropdown-item"
+      (click)="selectCity(city)"
+    >
+      <div class="city-name">{{ city.name }}</div>
+      <div class="city-details">
+        <span class="detail">{{ city.region }}</span>
+        <span class="detail">{{ city.district }}</span>
+        <span class="detail">{{ city.isoCode }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="selectedCity" class="selected-city-info">
+    <h4>Selected City:</h4>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="label">Name:</span>
+        <span class="value">{{ selectedCity.name }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Region:</span>
+        <span class="value">{{ selectedCity.region }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">District:</span>
+        <span class="value">{{ selectedCity.district }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">ISO Code:</span>
+        <span class="value">{{ selectedCity.isoCode }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Belfiore Code:</span>
+        <span class="value">{{ selectedCity.belfioreCode }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">City ID:</span>
+        <span class="value">{{ selectedCity.cityId }}</span>
+      </div>
+    </div>
+  </div>
+</div>

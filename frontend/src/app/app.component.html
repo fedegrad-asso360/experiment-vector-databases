@@ -1,0 +1,24 @@
+<div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+  <header style="text-align: center; margin-bottom: 40px;">
+    <h1 style="color: #333; margin-bottom: 10px;">Italian Cities Search</h1>
+    <p style="color: #666; font-size: 18px;">
+      Search for Italian cities using our vector database API
+    </p>
+  </header>
+
+  <main>
+    <app-city-search 
+      apiUrl="http://localhost:3000/cities/search"
+      placeholder="Type to search cities (e.g., Roma, Milano, Napoli)..."
+      [limit]="10"
+      (citySelected)="onCitySelected($event)">
+    </app-city-search>
+  </main>
+
+  <footer style="text-align: center; margin-top: 60px; color: #999; font-size: 14px;">
+    <p>
+      This component can be used as an Angular Element (Web Component)<br>
+      Tag: <code style="background: #f0f0f0; padding: 2px 8px; border-radius: 4px;">&lt;city-search-element&gt;&lt;/city-search-element&gt;</code>
+    </p>
+  </footer>
+</div>
